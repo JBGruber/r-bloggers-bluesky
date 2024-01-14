@@ -28,7 +28,7 @@ jobs:
           # use github version for now
           deps[deps == "atrrr"] <- "JBGruber/atrrr"
           # should handle remaining system requirements automatically
-          pak::pkg_install(deps)
+          pak::pkg_install(deps, dependencies = TRUE)
         shell: Rscript {0}
       - name: "Bot - Run"
         run: Rscript 'bot.r'
