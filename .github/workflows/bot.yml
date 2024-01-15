@@ -27,8 +27,9 @@ jobs:
           deps <- unique(renv::dependencies(".")$Package)
           # use github version for now
           deps[deps == "atrrr"] <- "JBGruber/atrrr"
+          deps <- c(deps, "jsonlite", "magick", "dplyr")
           # should handle remaining system requirements automatically
-          pak::pkg_install(deps, dependencies = TRUE)
+          pak::pkg_install(deps)
         shell: Rscript {0}
       - name: "Bot - Run"
         run: Rscript 'bot.r'
