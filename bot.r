@@ -57,6 +57,6 @@ posts_new <- posts |>
 
 ## Part 4: Post skeets!
 for (i in seq_len(nrow(posts_new))) {
-  post_skeet(text = posts_new$post_text[i], created_at = posts_new$timestamp[i])
+  try(post_skeet(text = posts_new$post_text[i], created_at = posts_new$timestamp[i])) 
 }
 
