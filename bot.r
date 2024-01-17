@@ -57,6 +57,11 @@ posts_new <- posts |>
 
 ## Part 4: Post skeets!
 for (i in seq_len(nrow(posts_new))) {
-  try(post_skeet(text = posts_new$post_text[i], created_at = posts_new$timestamp[i])) 
+  # if people upload broken preview images, this fails
+  resp <- try(post_skeet(text = posts_new$post_text[i],
+                         created_at = posts_new$timestamp[i]))
+  if (methods::is(resp, "try-error")) post_skeet(text = posts_new$post_text[i],
+                                                 created_at = posts_new$timestamp[i],
+                                                 preview_card = FALSE)
 }
 
