@@ -1,8 +1,8 @@
 name: "Update Bot"
 on:
   schedule:
-    - cron: '0 * * * *'
-  push:
+    - cron: '0 * * * *' # run the bot once an hour (at every minute 0 on the clock)
+  push: # also run the action when something on a new commit
     branches:
       - main
   pull_request:
@@ -14,13 +14,22 @@ jobs:
     name: bot
     runs-on: ubuntu-latest
     steps:
+
+        # you can use this action to install R
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: 'release'
+
+        # this one makes sure the files from your repo are accessible
       - name: Setup - Checkout repo
         uses: actions/checkout@v2
-      - name: System dependencires
+
+        # these dependencies are needed for pak to install packages
+      - name: System dependencies
         run: sudo apt-get install -y libcurl4-openssl-dev
+
+        # I created this custom installation of depenencies since the pre-pacakged one
+        # from https://github.com/r-lib/actions only works for repos containing R packages
       - name: "Install Packages"
         run: |
           install.packages(c("pak", "renv"))
@@ -31,7 +40,9 @@ jobs:
           # should handle remaining system requirements automatically
           pak::pkg_install(deps)
         shell: Rscript {0}
+
+        # after all the preparation, it's time to run the bot
       - name: "Bot - Run"
         run: Rscript 'bot.r'
         env:
-          ATR_PW: ${{ secrets.ATR_PW }}
+          ATR_PW: ${{ secrets.ATR_PW }} # to authenticat, store your app pw as a secret
