@@ -46,3 +46,9 @@ jobs:
         run: Rscript 'bot.r'
         env:
           ATR_PW: ${{ secrets.ATR_PW }} # to authenticat, store your app pw as a secret
+
+        # after 60 days without a commit, the bot is disabled by GitHub. keepalive-workflow 
+        # prevents that
+      - name: Keepalive Workflow
+        uses: gautamkrishnar/keepalive-workflow@2.0.7
+            
