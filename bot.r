@@ -50,18 +50,25 @@ Sys.setenv(BSKY_TOKEN = "r-bloggers.rds")
 auth(user = "r-bloggers.bsky.social",
      password = Sys.getenv("ATR_PW"),
      overwrite = TRUE)
-old_posts <- get_skeets_authored_by("r-bloggers.bsky.social", limit = 5000L)
+# there is a bug in this endpoint (not the function), which omits some posts
+# https://github.com/bluesky-social/atproto/issues/2616
+#
+# old_posts <- get_skeets_authored_by("r-bloggers.bsky.social", limit = 5000L)
+source("get_skeets_authored_by_bot.r")
+old_posts <- get_skeets_authored_by_bot(limit = 5000L)
+
 posts_new <- posts |>
   filter(!post_text %in% old_posts$text)
-
 
 ## Part 4: Post skeets!
 for (i in seq_len(nrow(posts_new))) {
   # if people upload broken preview images, this fails
   resp <- try(post_skeet(text = posts_new$post_text[i],
                          created_at = posts_new$timestamp[i]))
-  if (methods::is(resp, "try-error")) post_skeet(text = posts_new$post_text[i],
-                                                 created_at = posts_new$timestamp[i],
-                                                 preview_card = FALSE)
+  if (methods::is(resp, "try-error")) try({
+    post_skeet(text = posts_new$post_text[i],
+               created_at = posts_new$timestamp[i],
+               preview_card = FALSE)
+  })
 }
 
