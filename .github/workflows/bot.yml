@@ -52,7 +52,7 @@ jobs:
   keepalive-job:
     name: Keepalive Workflow
     if: ${{ always() }}
-    needs: main-job
+    needs: blog-updates
     runs-on: ubuntu-latest
     permissions:
       contents: write
