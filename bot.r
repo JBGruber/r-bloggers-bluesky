@@ -38,7 +38,7 @@ posts <- rss_posts |>
   mutate(
     desc_preview_len = 294 - nchar(title),
     desc_preview = map2_chr(description, desc_preview_len, function(x, y) str_trunc(x, y)),
-    post_text = glue("{title}\n\n\"{desc_preview}\"\n\n{link}")
+    post_text = glue("{title}\n\n\"{desc_preview}\"")
   )
 
 
