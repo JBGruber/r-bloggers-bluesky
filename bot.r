@@ -13,20 +13,15 @@ feed <- read_xml("http://r-bloggers.com/rss")
 rss_posts <- tibble::tibble(
   title = xml_find_all(feed, "//item/title") |>
     xml_text(),
-
   creator = xml_find_all(feed, "//item/dc:creator") |>
     xml_text(),
-
   link = xml_find_all(feed, "//item/link") |>
     xml_text(),
-
   ext_link = xml_find_all(feed, "//item/guid") |>
     xml_text(),
-
   timestamp = xml_find_all(feed, "//item/pubDate") |>
     xml_text() |>
     utctime(tz = "UTC"),
-
   description = xml_find_all(feed, "//item/description") |>
     xml_text() |>
     # strip html from description
@@ -40,16 +35,20 @@ rss_posts <- tibble::tibble(
 
 ## Part 2: create posts from feed
 posts <- rss_posts |>
-  mutate(desc_preview_len = 294 - nchar(title) - nchar(link),
-         desc_preview = map2_chr(description, desc_preview_len, function(x, y) str_trunc(x, y)),
-         post_text = glue("{title}\n\n\"{desc_preview}\"\n\n{link}"))
+  mutate(
+    desc_preview_len = 294 - nchar(title),
+    desc_preview = map2_chr(description, desc_preview_len, function(x, y) str_trunc(x, y)),
+    post_text = glue("{title}\n\n\"{desc_preview}\"\n\n{link}")
+  )
 
 
 ## Part 3: get already posted updates and de-duplicate
 Sys.setenv(BSKY_TOKEN = "r-bloggers.rds")
-auth(user = "r-bloggers.bsky.social",
-     password = Sys.getenv("ATR_PW"),
-     overwrite = TRUE)
+auth(
+  user = "r-bloggers.bsky.social",
+  password = Sys.getenv("ATR_PW"),
+  overwrite = TRUE
+)
 # there is a bug in this endpoint (not the function), which omits some posts
 # https://github.com/bluesky-social/atproto/issues/2616
 #
@@ -63,12 +62,18 @@ posts_new <- posts |>
 ## Part 4: Post skeets!
 for (i in seq_len(nrow(posts_new))) {
   # if people upload broken preview images, this fails
-  resp <- try(post_skeet(text = posts_new$post_text[i],
-                         created_at = posts_new$timestamp[i]))
-  if (methods::is(resp, "try-error")) try({
-    post_skeet(text = posts_new$post_text[i],
-               created_at = posts_new$timestamp[i],
-               preview_card = FALSE)
-  })
+  resp <- try(post_skeet(
+    text = posts_new$post_text[i],
+    created_at = posts_new$timestamp[i]
+  ))
+  if (methods::is(resp, "try-error")) {
+    try({
+      post_skeet(
+        text = posts_new$post_text[i],
+        created_at = posts_new$timestamp[i],
+        link = posts_new$link,
+        preview_card = FALSE
+      )
+    })
+  }
 }
-
